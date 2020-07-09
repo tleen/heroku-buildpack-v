@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# usage: bin/compile <build-dir> <cache-dir> <env-dir>
+
+# Based on https://devcenter.heroku.com/articles/buildpack-api
+
+set -eo pipefail
+
+
+
+primary(){
+    sed -u 's/^/-----> /'   
+}
+
+secondary() {
+    sed -u 's/^/       /'
+}
+
+v_repository="https://github.com/vlang/v.git"
+
+mkdir -p "$1" "$2"
+build_dir=$(cd "$1/" && pwd)
+cache_dir=$(cd "$2/" && pwd)
+env_dir="${3}"
+
+echo "creating v directory..." | primary
+v_dir="$cache_dir/v"
+rm -Rf $v_dir
+mkdir $v_dir
+echo "created $v_dir" | secondary
+
+echo "building v..." | primary
+cd $v_dir
+echo "cloning $v_repository" | secondary
+git clone $v_repository .
+echo "building v" | secondary
+make
+echo "built v" | secondary
+v_command="$v_dir/v"
+# xx - v version here?
+
+echo "building v application..." | primary
+cd $build_dir
+# v install wont work if the dependencies are empty
+echo "determining if dependencies exist..." | secondary
+if grep -Fq "dependencies: []" v.mod
+then
+    echo "no dependencies found" | secondary
+else
+    echo "installing dependencies" | secondary
+    $v_command install
+fi
+
+echo "compiling main module" | secondary
+$v_command -o main .
