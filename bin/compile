@@ -48,6 +48,7 @@ then
 else
     echo "installing dependencies" | secondary
     $v_command install
+    mv ~/.vmodules modules
 fi
 
 echo "compiling main module" | secondary
