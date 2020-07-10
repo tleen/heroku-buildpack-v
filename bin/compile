@@ -31,7 +31,7 @@ echo "created $v_dir" | secondary
 echo "building v..." | primary
 cd $v_dir
 echo "cloning $v_repository" | secondary
-git clone $v_repository .
+git clone --recurse-submodules $v_repository .
 echo "building v" | secondary
 make
 echo "built v" | secondary
